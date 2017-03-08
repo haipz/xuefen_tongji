@@ -1,46 +1,106 @@
+var firstTerm = "2013-2014-1" // 设置第一学期
+var lastTerm = "2016-2017-2" // 设置最后一个学期
+
+// 因为不确定哪些是A类哪些B类以及哪些是C类 这里可以自定义实践课什么的  必修和课外必修区别开来了不用担心
+var typeList = [        
+    "实践",
+    "必修",
+    "任选",
+    "限选",
+    "课外必修"
+]
+
+var finalSum = {}
+
 function importJquery() {
     var jquery = document.createElement('script');
     jquery.src = "https://code.jquery.com/jquery-3.1.1.min.js";
     document.getElementsByTagName('head')[0].appendChild(jquery);
 }
 
-function checkShiJian() {
-    var total = jQuery('#DataGrid1.datelist').children().find('tr').length - 1
-    var sum = 0
-    for (var i = 0; i < total; i++) {
-        var obj = jQuery('.datelist').children().children().eq(i + 1).children();
-        if (obj.eq(4).text() == "实践") {
-            sum += parseFloat(obj.eq(6).text())
-            console.log(obj.eq(0).text() + "-" + obj.eq(1).text() + " " + obj.eq(3).text() + " " + obj.eq(4).text() + " " + obj.eq(6).text())
-        }
-    }
-    console.log("实践：" + sum)
+function generateName() {
+    var yearNow = jQuery('#ddlxn>option:checked').text()
+    var termNow = $('#ddlxq').val()
+    return yearNow + "-" + termNow
 }
 
-function checkBiXiu() {
-    var total = jQuery('#DataGrid1.datelist').children().find('tr').length - 1
-    var sum = 0
-    for (var i = 0; i < total; i++) {
-        var obj = jQuery('.datelist').children().children().eq(i + 1).children();
-        if (obj.eq(4).text().indexOf("必修") >= 0) {
-            sum += parseFloat(obj.eq(6).text())
-            console.log(obj.eq(0).text() + "-" + obj.eq(1).text() + " " + obj.eq(3).text() + " " + obj.eq(4).text() + " " + obj.eq(6).text())
-        }
+function saveIntoLocalStorage(str) {
+    console.log(str)
+    var oldStr = localStorage.getItem(generateName())
+    if (oldStr != null) {
+        localStorage.setItem(generateName(), oldStr + ";" + str)
+    } else {
+        localStorage.setItem(generateName(), str)
     }
-    console.log("必修：" + sum)
 }
 
-function checkRenXuan() {
+function saveKeysIntoLocalStorage(key) {
+    var oldStr = localStorage.getItem('keyList')
+    if (oldStr != null) {
+        localStorage.setItem('keyList', oldStr + ";" + key)
+    } else {
+        localStorage.setItem('keyList', key)
+    }
+}
+
+function getKeyListFromLocalStorage() {
+    var keyListStr = localStorage.getItem('keyList')
+    var keyList = keyListStr.split(';')
+    return keyList
+}
+
+function printDateFromLocalStorage() {
+    
+    keyList = getKeyListFromLocalStorage()
+    for (var key in keyList) {
+        var value = keyList[key]
+        var termInfo = localStorage.getItem(value).split(';')
+        console.log("\n学期:" + value)
+        for (var infoIndex in termInfo) {
+            var info = termInfo[infoIndex]
+            console.log(info)
+            for (var sumKey in finalSum) {
+                var sumVal = finalSum[sumKey]
+                if (info.indexOf(sumKey) >= 0) {
+                    sumVal += parseFloat(info.substring(info.indexOf(sumKey) + sumKey.length))
+                    finalSum[sumKey] = sumVal
+                }
+            }
+        }
+    }
+    console.log(JSON.stringify(finalSum))
+}
+
+
+function dealWityDiffType(strType) {
     var total = jQuery('#DataGrid1.datelist').children().find('tr').length - 1
     var sum = 0
     for (var i = 0; i < total; i++) {
         var obj = jQuery('.datelist').children().children().eq(i + 1).children();
-        if (obj.eq(4).text().indexOf("任选") >= 0) {
-            sum += parseFloat(obj.eq(6).text())
-            console.log(obj.eq(0).text() + "-" + obj.eq(1).text() + " " + obj.eq(3).text() + " " + obj.eq(4).text() + " " + obj.eq(6).text())
+        if (strType == "必修") {
+            if (obj.eq(4).text().indexOf(strType) >= 0 && obj.eq(4).text().indexOf("课外必修") < 0) {
+                sum += parseFloat(obj.eq(6).text())
+                saveIntoLocalStorage(obj.eq(0).text() + "-" + obj.eq(1).text() + " " + obj.eq(3).text() + " " + obj.eq(4).text() + " " + obj.eq(6).text())
+            }
+        } else {
+            if (obj.eq(4).text().indexOf(strType) >= 0) {
+                sum += parseFloat(obj.eq(6).text())
+                saveIntoLocalStorage(obj.eq(0).text() + "-" + obj.eq(1).text() + " " + obj.eq(3).text() + " " + obj.eq(4).text() + " " + obj.eq(6).text())
+            }
         }
     }
-    console.log("任选：" + sum)
+    saveIntoLocalStorage("==============↑" + strType + "↑==============")
+    return strType + "：" + sum
+}
+
+function getAll() {
+    var sumList = []
+    for (var idx in typeList) {
+        sumList[idx] = dealWityDiffType(typeList[idx])
+    }
+    for (var idx in sumList) {
+        saveIntoLocalStorage(sumList[idx])
+    }
 }
 
 
@@ -51,7 +111,7 @@ function getTotalXueFen() {
         var obj = jQuery('.datelist').children().children().eq(i + 1).children();
         sum += parseFloat(obj.eq(6).text())
     }
-    console.log("总学分：" + sum)
+    saveIntoLocalStorage("总学分：" + sum)
 }
 
 function switchToNextTerm() {
@@ -68,12 +128,26 @@ function switchToNextTerm() {
 }
 
 function doMain() {
-    checkShiJian();
-    checkRenXuan()
-    checkBiXiu()
+    if (firstTerm == generateName()) {
+        localStorage.clear()
+        console.log("第一学期开始,清空本地缓存")
+    }
+
+    saveKeysIntoLocalStorage(generateName())
+    getAll()
     getTotalXueFen()
     console.log("done")
-    switchToNextTerm()
+
+    if (lastTerm == generateName()) {
+        
+        for(var idx in typeList){
+            finalSum[typeList[idx]+'：']=0
+        }
+        printDateFromLocalStorage()
+    } else {
+        switchToNextTerm()
+    }
+
 }
 
 function installJquery(callback) {
@@ -84,6 +158,7 @@ function installJquery(callback) {
 
 installJquery(function f(s) {
         console.log(s)
+        console.log("outside installJquery")
     })
     //先复制以上代码到console 回车执行
 
@@ -91,8 +166,10 @@ installJquery(function f(s) {
 doMain()
 
 /***
- * 进入大一第一个学期
+ * 修改最上方开始学期和结束学期（13届就不用改了）
+ * 先进入大一第一个学期
  * 执行上述操作
  * 当页面刷新后只要按两次键盘向上键，到方法定义代码再回车，然后再按两次向上键回车执行doMain()
- * 到最后一个学期之后 将log保存到本地 在对log文件进行处理即刻 结合sublime和Excel处理一下就行了，easy
+ * 到最后一个学期之后 自动输出学分统计信息
+ * eg.{"实践：":21,"必修：":98.5,"任选：":21,"限选：":21,"课外必修：":7.5}
  */
