@@ -50,10 +50,11 @@ function getKeyListFromLocalStorage() {
 }
 
 function printDateFromLocalStorage() {
+    finalSum = {}
     for (var idx in typeList) {
-        finalSum[typeList[idx] + '：'] = 0
+        finalSum[typeList[idx]] = 0
     }
-    finalSum["总学分："]=0
+    finalSum["总学分"] = 0
     keyList = getKeyListFromLocalStorage()
     for (var key in keyList) {
         var value = keyList[key]
@@ -64,21 +65,25 @@ function printDateFromLocalStorage() {
             console.log(info)
             for (var sumKey in finalSum) {
                 var sumVal = finalSum[sumKey]
-                if (sumKey == "必修：") {
-                    if (info.indexOf(sumKey) >= 0 && info.indexOf("课外必修：") < 0) {
-                        sumVal += parseFloat(info.substring(info.indexOf(sumKey) + sumKey.length))
+                var findKey = sumKey + '：'
+                if (findKey == "必修") {
+                    if (info.indexOf(findKey) >= 0 && info.indexOf("课外必修：") < 0) {
+                        sumVal += parseFloat(info.substring(info.indexOf(findKey) + findKey.length))
                         finalSum[sumKey] = sumVal
                     }
                 } else {
-                    if (info.indexOf(sumKey) >= 0) {
-                        sumVal += parseFloat(info.substring(info.indexOf(sumKey) + sumKey.length))
+                    if (info.indexOf(findKey) >= 0) {
+                        sumVal += parseFloat(info.substring(info.indexOf(findKey) + findKey.length))
                         finalSum[sumKey] = sumVal
                     }
                 }
             }
         }
     }
+
+    console.log("\n\n ==============↓Result:↓==============")
     console.log(JSON.stringify(finalSum))
+    console.log("剔除课外必修后的总学分：" + (finalSum["总学分"] - finalSum["课外必修"]))
 }
 
 
