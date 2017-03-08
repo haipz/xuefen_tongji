@@ -53,6 +53,7 @@ function printDateFromLocalStorage() {
     for (var idx in typeList) {
         finalSum[typeList[idx] + '：'] = 0
     }
+    finalSum["总学分："]=0
     keyList = getKeyListFromLocalStorage()
     for (var key in keyList) {
         var value = keyList[key]
