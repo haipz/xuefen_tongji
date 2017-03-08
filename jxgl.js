@@ -2,7 +2,7 @@ var firstTerm = "2013-2014-1" // 设置第一学期
 var lastTerm = "2016-2017-2" // 设置最后一个学期
 
 // 因为不确定哪些是A类哪些B类以及哪些是C类 这里可以自定义实践课什么的  必修和课外必修区别开来了不用担心
-var typeList = [        
+var typeList = [
     "实践",
     "必修",
     "任选",
@@ -50,7 +50,9 @@ function getKeyListFromLocalStorage() {
 }
 
 function printDateFromLocalStorage() {
-    
+    for (var idx in typeList) {
+        finalSum[typeList[idx] + '：'] = 0
+    }
     keyList = getKeyListFromLocalStorage()
     for (var key in keyList) {
         var value = keyList[key]
@@ -61,9 +63,16 @@ function printDateFromLocalStorage() {
             console.log(info)
             for (var sumKey in finalSum) {
                 var sumVal = finalSum[sumKey]
-                if (info.indexOf(sumKey) >= 0) {
-                    sumVal += parseFloat(info.substring(info.indexOf(sumKey) + sumKey.length))
-                    finalSum[sumKey] = sumVal
+                if (sumKey == "必修：") {
+                    if (info.indexOf(sumKey) >= 0 && info.indexOf("课外必修：") < 0) {
+                        sumVal += parseFloat(info.substring(info.indexOf(sumKey) + sumKey.length))
+                        finalSum[sumKey] = sumVal
+                    }
+                } else {
+                    if (info.indexOf(sumKey) >= 0) {
+                        sumVal += parseFloat(info.substring(info.indexOf(sumKey) + sumKey.length))
+                        finalSum[sumKey] = sumVal
+                    }
                 }
             }
         }
@@ -139,10 +148,6 @@ function doMain() {
     console.log("done")
 
     if (lastTerm == generateName()) {
-        
-        for(var idx in typeList){
-            finalSum[typeList[idx]+'：']=0
-        }
         printDateFromLocalStorage()
     } else {
         switchToNextTerm()
