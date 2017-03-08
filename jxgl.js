@@ -4,8 +4,11 @@ var lastTerm = "2016-2017-2" // 设置最后一个学期
 // 因为不确定哪些是A类哪些B类以及哪些是C类 这里可以自定义实践课什么的  必修和课外必修区别开来了不用担心
 var typeList = [
     "实践",
-    "必修",
-    "任选",
+    "学科必修",
+    "公共必修",
+    "专业必修",
+    "校定必修",
+    "任选", // 包括专业任选和校公选课
     "限选",
     "课外必修"
 ]
@@ -92,15 +95,28 @@ function dealWityDiffType(strType) {
     var sum = 0
     for (var i = 0; i < total; i++) {
         var obj = jQuery('.datelist').children().children().eq(i + 1).children();
+        var courseNature = obj.eq(4).text()
+        var courseType = obj.eq(5).text()
+        if (typeof(courseType) == "undefined") {
+            courseType = ""
+        }
         if (strType == "必修") {
-            if (obj.eq(4).text().indexOf(strType) >= 0 && obj.eq(4).text().indexOf("课外必修") < 0) {
+            if ((courseType.indexOf(strType) >= 0 || courseNature.indexOf(strType) >= 0) && courseNature.indexOf("课外必修") < 0) {
                 sum += parseFloat(obj.eq(6).text())
-                saveIntoLocalStorage(obj.eq(0).text() + "-" + obj.eq(1).text() + " " + obj.eq(3).text() + " " + obj.eq(4).text() + " " + obj.eq(6).text())
+                saveIntoLocalStorage(obj.eq(0).text() + "-" + obj.eq(1).text() + " " + obj.eq(3).text() + " " + courseNature + " " + courseType + " " + obj.eq(6).text())
+            }
+        } else if (strType == "任选") {
+            if ((courseType.indexOf(strType) >= 0 || courseNature.indexOf(strType) >= 0) || (courseType.indexOf("公选") >= 0 || courseNature.indexOf("公选") >= 0)) {
+                sum += parseFloat(obj.eq(6).text())
+                if (courseType.indexOf('公选') >= 0) {
+                    courseType += "[任选]"
+                }
+                saveIntoLocalStorage(obj.eq(0).text() + "-" + obj.eq(1).text() + " " + obj.eq(3).text() + " " + courseNature + " " + courseType + " " + obj.eq(6).text())
             }
         } else {
-            if (obj.eq(4).text().indexOf(strType) >= 0) {
+            if (courseNature.indexOf(strType) >= 0 || courseType.indexOf(strType) >= 0) {
                 sum += parseFloat(obj.eq(6).text())
-                saveIntoLocalStorage(obj.eq(0).text() + "-" + obj.eq(1).text() + " " + obj.eq(3).text() + " " + obj.eq(4).text() + " " + obj.eq(6).text())
+                saveIntoLocalStorage(obj.eq(0).text() + "-" + obj.eq(1).text() + " " + obj.eq(3).text() + " " + courseNature + " " + courseType + " " + obj.eq(6).text())
             }
         }
     }
