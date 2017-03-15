@@ -24,7 +24,7 @@ function importJquery() {
 }
 
 function generateName() {
-	var yearNow = jQuery('#ddlxn>option:checked').text()
+	var yearNow = jQuery('#ddlxn>option:selected').text()
 	var termNow = $('#ddlxq').val()
 	return yearNow + "-" + termNow
 }
@@ -92,7 +92,7 @@ function printDateFromLocalStorage() {
 }
 
 
-function dealWityDiffType(strType) {
+function dealWithDiffType(strType) {
 	var total = jQuery('#DataGrid1.datelist').children().find('tr').length - 1
 	var sum = 0
 	for (var i = 0; i < total; i++) {
@@ -134,7 +134,7 @@ function dealWityDiffType(strType) {
 function getAll() {
 	var sumList = []
 	for (var idx in typeList) {
-		sumList[idx] = dealWityDiffType(typeList[idx])
+		sumList[idx] =  dealWithDiffType(typeList[idx])
 	}
 	var checkSum=0
 	for (var idx in sumList) {
